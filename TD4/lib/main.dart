@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:jpp/ui/panier.dart';
 import 'package:jpp/ui/share/appbar_widget.dart';
+import 'package:jpp/ui/share/bottom_navigation_bar.dart';
+import 'package:provider/provider.dart';
 import 'models/cart.dart';
 import 'models/menu.dart';
 import 'models/pizza_data.dart';
 import 'models/pizza.dart';
 import 'ui/pizza_list.dart';
 
-
-
 void main() {
-  runApp(MyApp());
+  runApp(ChangeNotifierProvider(create: (context) => Cart(), child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -22,7 +24,10 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Notre pizzéria'),
+      home: MyHomePage(title: 'MA pizzéria'),
+      routes: {
+        '/panier': (context) => Panier(),
+      },
     );
   }
 }
@@ -31,8 +36,8 @@ class MyHomePage extends StatelessWidget {
   String title;
   Cart _cart;
 
-  MyHomePage({required this.title, Key? key}) :
-        _cart = Cart(),
+  MyHomePage({required this.title, Key? key})
+      : _cart = Cart(),
         super(key: key);
 
   var _menus = [
@@ -65,21 +70,18 @@ class MyHomePage extends StatelessWidget {
           itemExtent: 180,
         ),
       ),
+      bottomNavigationBar: BottomNavigationBarWidget(0),
     );
   }
-}
 
-
-_buildRow(Menu menu) {
-  return Column(
-    children: <Widget>[
-      Expanded(
-        child: Image.asset(
-          'assets/images/menus/${menu.image}',
-          fit: BoxFit.fitWidth
+  _buildRow(Menu menu) {
+    return Column(
+      children: <Widget>[
+        Expanded(
+          child: Image.asset('assets/images/menus/${menu.image}',
+              fit: BoxFit.fitWidth),
         ),
-        ),
-      Container(
+        Container(
           height: 50,
           child: Center(
             child: Text(
@@ -88,11 +90,11 @@ _buildRow(Menu menu) {
                 fontWeight: FontWeight.bold,
                 fontFamily: 'Roboto',
                 fontSize: 28,
-               ),
               ),
-             ),
             ),
-           ],
-          );
-         }
-
+          ),
+        ),
+      ],
+    );
+  }
+}

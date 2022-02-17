@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:jpp/models/cart.dart';
-import 'package:jpp/ui/share/total_widget.dart';
+import 'package:jpp/ui/share/bottom_navigation_bar.dart';
+import 'package:jpp/ui/share/pizzeria_style.dart';
+import 'package:provider/provider.dart';
+import 'package:provider/src/provider.dart';
 
 class Panier extends StatefulWidget {
-  final Cart _cart;
-
-  const Panier(this._cart, {Key? key}) : super(key: key);
+  const Panier({Key? key}) : super(key: key);
 
   @override
   _PanierState createState() => _PanierState();
@@ -21,19 +23,12 @@ class _PanierState extends State<Panier> {
       body: Column(
         children: [
           Expanded(
-            child: ListView.builder(
-                itemExtent: 180,
-                itemCount: widget._cart.totalItems(),
-                padding: const EdgeInsets.all(8.0),
-                itemBuilder: (context, index) {
-                  return _buildItem(widget._cart.getCartItem(index));
-                }),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: _CartList(),
+            ),
           ),
-          Row(
-            children: [
-              Text('Total : ${widget._cart.price} €'),
-            ],
-          ),
+          _CartTotal(),
           Container(
               child: ElevatedButton(
             child: Text('Valider'),
@@ -43,10 +38,34 @@ class _PanierState extends State<Panier> {
           )),
         ],
       ),
+      bottomNavigationBar: BottomNavigationBarWidget(2),
+    );
+  }
+}
+
+class _CartList extends StatefulWidget {
+  const _CartList({Key? key}) : super(key: key);
+
+  @override
+  _CartListState createState() => _CartListState();
+}
+
+class _CartListState extends State<_CartList> {
+  @override
+  Widget build(BuildContext context) {
+    Cart _cart = context.watch<Cart>();
+    return ListView.builder(
+      itemExtent: 180,
+      itemCount: _cart.totalItems,
+      padding: const EdgeInsets.all(8.0),
+      itemBuilder: (context, index) {
+        return _buildItem(_cart, _cart.getCartItem(index));
+      },
     );
   }
 
-  Widget _buildItem(CartItem cartItem) {
+  Widget _buildItem(Cart cart, CartItem cartItem) {
+    final NumberFormat format = NumberFormat("###.00 €");
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -61,62 +80,65 @@ class _PanierState extends State<Panier> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ListTile(
-                title:
-                    Text(cartItem.pizza.title + ' x ${cartItem.pizza.quantity}'),
+                title: Text(cartItem.pizza.title +
+                    ' x ' +
+                    cartItem.pizza.quantity.toString()),
               ),
               Container(
                 padding: const EdgeInsets.all(4.0),
-                child:
-                    Text('${cartItem.pizza.price * cartItem.pizza.quantity} €'),
+                child: Text((cartItem.pizza.price * cartItem.pizza.quantity)
+                    .toString()),
               ),
-              IconButton(
-                  onPressed: () {
-                    Widget okButton = TextButton(
-                      child: Text("OK"),
-                      onPressed: () {Navigator.of(context).pop(); },
-                    );
-                    AlertDialog alert = AlertDialog(
-                      title: Text("Dommage..."),
-                      content: Text('Pizza ${cartItem.pizza.title} supprimée du panier !'),
-                      actions: [
-                        okButton,
-                      ],
-                    );
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return alert;
+              Row(
+                children: [
+                  IconButton(
+                      onPressed: () {
+                        cart.removeQuantity(cartItem.pizza);
+                        setState(() {
+
+                        });
                       },
-                    );
-                    setState(widget._cart.removeProduct(cartItem.pizza));
-                  },
-                  icon: Icon(Icons.remove)),
-              IconButton(
-                  onPressed: () {
-                    Widget okButton = TextButton(
-                      child: Text("OK"),
-                      onPressed: () {Navigator.of(context).pop(); },
-                    );
-                    AlertDialog alert = AlertDialog(
-                      title: Text("Super !"),
-                      content: Text('Pizza ${cartItem.pizza.title} ajoutée au panier !'),
-                      actions: [
-                        okButton,
-                      ],
-                    );
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return alert;
+                      icon: Icon(Icons.remove)),
+                  IconButton(
+                      onPressed: () {
+                        cart.addQuantity(cartItem.pizza);
+                        setState(() {
+
+                        });
                       },
-                    );
-                    setState(widget._cart.addProduct(cartItem.pizza));
-                  },
-                  icon: Icon(Icons.add)),
+                      icon: Icon(Icons.add))
+                ],
+              )
             ],
           ),
         ),
       ],
+    );
+  }
+}
+
+class _CartTotal extends StatelessWidget {
+  //var format = NumberFormat("###.00 €");
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12.0),
+      height: 220,
+      child: Consumer<Cart>(builder: (context, cart, child) {
+        if (cart.price <= 0) {
+          return Center(
+            child:
+                Text('Aucun produit', style: PizzeriaStyle.priceTotalTextStyle),
+          );
+        } else {
+          return Column(
+            children: [
+              Text('Total : ${cart.price} €'),
+            ],
+          );
+        }
+      }),
     );
   }
 }

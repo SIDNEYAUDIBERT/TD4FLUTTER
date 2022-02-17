@@ -25,7 +25,7 @@ class AppBarWidget
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => Panier(_cart),
+                builder: (context) => Panier(),
               ));
           },
           icon: Icon(Icons.shopping_cart),

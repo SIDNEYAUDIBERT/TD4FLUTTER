@@ -61,7 +61,7 @@ class _PizzaDetailsState extends State<PizzaDetails> {
           ),
           _buildDropDownSauces(),
           TotalWidget(widget._pizza.total),
-          BuyButtonWidget(widget._pizza, widget._cart),
+          BuyButtonWidget(widget._pizza),
         ],
       ),
     );
